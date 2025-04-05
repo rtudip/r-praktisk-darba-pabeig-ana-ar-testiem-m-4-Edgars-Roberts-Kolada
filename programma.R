@@ -1,7 +1,7 @@
-kordat <- read.csv("variants16.txt", header = TRUE, dec= ",", sep = "\t", stringsAsFactors = FALSE, strip.white = TRUE, row.names=1)
+kordat <- read.csv("variants16.txt", header = TRUE, dec= ',', sep = "\t", stringsAsFactors = FALSE, strip.white = TRUE, row.names=1)
 
 kordat <- kordat[!apply(kordat,1,anyNA), ]
-kordat[9:ncol(kordat)] <- lapply(kordat[9:ncol(kordat)], as.factor)
+kordat[9:ncol(kordat)] <- (lapply(kordat[9:ncol(kordat)], as.factor))
 
 
 sink("results.txt")
@@ -11,15 +11,19 @@ print(summary(kordat[9:ncol(kordat)], maxsum = 15))
 sl.by.b <- split(kordat$Slope, kordat$b)
 print(sl.by.b)
 
-kordat$Average <- rowMeans(kordat[, c("Slope", "Intercept", "adj.r.squared")], na.rm = TRUE)
+kordat$Average <- apply(kordat[, c("Slope", "Intercept", "adj.r.squared")], 1, mean)
 
 std.by.f <- tapply(kordat$Average, kordat$f, sd, na.rm = TRUE)
-print(std.by.f)
+lapply(std.by.f, function(x) x)
 cat("\n")
 
 prockordat <- kordat[abs(kordat$adj.r.squared) > 0.7, ]
 
-prockordat$Slope <- (1 - (1 / prockordat$Slope))
+adjust_slope <- function(x) {
+  1 - (1 / x)
+}
+
+prockordat$Slope <- adjust_slope(prockordat$Slope)
 
 print(prockordat)
 cat("\n")
